@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Katale Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#0F8A5F; --g-d:#0B6B49; --g-t:#0F8A5F; --g-soft:#E3F3EC;
+  --y:#FFD447; --y-soft:#FFF6D6;
+  --b:#1F4E79; --b-soft:#E4ECF4;
+  --bg:#F8F9FA; --surface:#FFFFFF; --ink:#14201B; --muted:#5B6B64; --line:#E3E8E5; --sk:#E9EEEB;
+  --ok:#28A745; --bad:#DC3545; --bad-soft:#FBE7E9;
+  --shadow:0 1px 2px rgba(20,32,27,.05),0 4px 14px rgba(20,32,27,.06);
+  --rail:#102A20;
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --g-t:#34C48C; --g-soft:#143327; --y-soft:#3A3213; --b-soft:#17283A;
+    --bg:#0D1411; --surface:#15201B; --ink:#EAF1ED; --muted:#9DB0A7; --line:#25332D; --sk:#1F2D27;
+    --bad-soft:#3A1A1E; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); --rail:#0A1712;
+  }
+}
+:root[data-theme="dark"]{
+  --g-t:#34C48C; --g-soft:#143327; --y-soft:#3A3213; --b-soft:#17283A;
+  --bg:#0D1411; --surface:#15201B; --ink:#EAF1ED; --muted:#9DB0A7; --line:#25332D; --sk:#1F2D27;
+  --bad-soft:#3A1A1E; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); --rail:#0A1712;
+}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Bricolage Grotesque','Figtree',system-ui,sans-serif;margin:0;letter-spacing:-.01em;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:3px solid var(--y);outline-offset:2px;border-radius:8px}
+.ic{flex:none;display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- background ---------- */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;
+  background:url('katale-icon.png') no-repeat center center;
+  background-size:cover;opacity:0.03;pointer-events:none;
+}
+
+/* ---------- admin shell ---------- */
+.adm-wrap{display:grid;grid-template-columns:260px 1fr;min-height:100%}
+.adm-side{background:var(--rail);color:#DCEBE4;display:flex;flex-direction:column;overflow:hidden}
+.adm-side-h{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.adm-side-h .logo{display:flex;align-items:center;gap:10px;color:#fff;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px}
+.adm-side-h .logo img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.adm-side-h p{margin:10px 0 0;font-size:13px;color:#9FB8AD;line-height:1.4}
+.adm-nav{flex:1;overflow:auto;padding:12px}
+.adm-nav button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;font-size:14px;color:#C5DACF;text-align:left;margin-bottom:2px}
+.adm-nav button:hover{background:rgba(255,255,255,.07)}
+.adm-nav button.active{background:var(--g);color:#fff;font-weight:600}
+.adm-nav button small{width:20px;text-align:center;color:#7F9C8F;font-variant-numeric:tabular-nums}
+.adm-nav button.active small{color:#CFF0E2}
+.adm-foot{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.adm-foot button{display:flex;align-items:center;gap:8px;color:#C5DACF;font-size:13px;padding:8px 10px;border-radius:8px;width:100%}
+.adm-foot button:hover{background:rgba(255,255,255,.07)}
+.adm-main{min-width:0;display:flex;flex-direction:column}
+.adm-top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.adm-top h2{flex:1;font-size:20px}
+.adm-body{flex:1;overflow:auto;padding:20px 24px 40px}
+
+/* ---------- login ---------- */
+.login-wrap{min-height:100%;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#0F8A5F 0%,#0B6B49 70%)}
+.login-card{width:100%;max-width:420px;background:var(--surface);border-radius:24px;padding:32px;box-shadow:0 30px 70px rgba(16,42,32,.22)}
+.login-card .logo{display:flex;align-items:center;gap:10px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;margin-bottom:24px}
+.login-card .logo img{width:38px;height:38px;border-radius:12px;object-fit:cover}
+.login-card h1{font-size:22px;margin-bottom:6px}
+.login-card p{color:var(--muted);font-size:14px;margin:0 0 20px}
+.login-card .inp{width:100%;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);outline:none;margin-bottom:12px}
+.login-card .inp:focus{border-color:var(--g);box-shadow:0 0 0 3px color-mix(in srgb,var(--g) 22%,transparent)}
+.login-card .btn{width:100%;min-height:48px;border-radius:14px;background:var(--g);color:#fff;font-weight:700;font-size:15px}
+.login-card .btn:hover{background:var(--g-d)}
+.login-card .err{color:var(--bad);font-size:13px;margin-top:8px;display:none}
+
+/* ---------- shared ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.pad{padding:16px}
+.stack>*+*{margin-top:12px}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:12px;font-weight:600;background:var(--g);color:#fff;font-size:14px;white-space:nowrap}
+.btn:hover{background:var(--g-d)}
+.btn.sec{background:var(--y);color:#2A2200}
+.btn.sec:hover{background:#F5C928}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--sk)}
+.btn.danger{background:var(--bad)}
+.btn.danger:hover{background:#c82333}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-size:14px;font-weight:500;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--g);border-color:var(--g);color:#fff}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--sk);color:var(--muted)}
+.tag.ok{background:var(--g-soft);color:var(--g-t)}
+.tag.warn{background:var(--y-soft);color:#7A5D00}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.info{background:var(--b-soft);color:var(--b)}
+.inp,.sel{width:100%;min-height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);outline:none;font-size:14px}
+.inp:focus,.sel:focus{border-color:var(--g);box-shadow:0 0 0 3px color-mix(in srgb,var(--g) 22%,transparent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.stat:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(20,32,27,.1)}
+.stat small{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:6px}
+.stat b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:28px;margin-top:6px}
+.stat em{font-style:normal;font-size:12px;color:var(--muted)}
+.table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table th{text-align:left;font-weight:600;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.table td{padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.table tr:hover td{background:var(--sk)}
+.empty{text-align:center;padding:32px 20px;color:var(--muted)}
+.empty svg{display:block;margin:0 auto 12px;color:var(--line)}
+.es{display:flex;flex-direction:column;align-items:center;text-align:center;padding:28px 20px;gap:6px}
+.es .eb{width:56px;height:56px;border-radius:18px;background:var(--g-soft);color:var(--g-t);display:grid;place-items:center;margin-bottom:6px}
+.es h4{font-size:16px}
+.es p{margin:0 0 8px;color:var(--muted);font-size:14px;max-width:30ch}
+.note{display:flex;gap:10px;padding:12px 14px;border-radius:14px;background:var(--b-soft);color:var(--b);font-size:13.5px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .note{color:#8DBBE6}}
+.avatar-s{width:38px;height:38px;border-radius:50%;background:var(--g-soft);color:var(--g-t);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.bar{height:8px;border-radius:8px;background:var(--sk);overflow:hidden;flex:1}
+.bar i{display:block;height:100%;background:var(--y);border-radius:8px}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:10px 12px;padding:14px 0;align-items:center}
+.kv dt{color:var(--muted);font-size:13px}
+.kv dd{margin:0;font-weight:500}
+
+/* ---------- contract ---------- */
+.contract-preview{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:40px;max-width:800px;margin:0 auto;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.contract-preview::before{content:"";position:absolute;top:0;right:0;width:200px;height:200px;background:url('katale-icon.png') no-repeat center center;background-size:contain;opacity:0.05;pointer-events:none}
+.contract-preview h2{text-align:center;margin-bottom:24px;font-size:24px}
+.contract-preview .sig{margin-top:40px;padding-top:20px;border-top:2px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.contract-preview .sig div{border-bottom:1px solid var(--ink);padding-bottom:8px}
+.contract-actions{display:flex;gap:10px;margin-top:20px;justify-content:center}
+
+@media (max-width:900px){
+  .adm-wrap{grid-template-columns:1fr}
+  .adm-side{display:none}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <div class="logo"><img src="katale-icon.png" alt="Katale" id="loginLogo"> Katale Admin</div>
+    <h1>Staff sign-in</h1>
+    <p>Enter your admin credentials to access the dashboard.</p>
+    <input class="inp" id="loginEmail" type="email" placeholder="name@katale.ug" autocomplete="email">
+    <input class="inp" id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn" id="loginBtn">Sign in</button>
+    <div class="err" id="loginErr">Invalid credentials</div>
+  </div>
+</div>
+
+<!-- Admin shell -->
+<div id="adminShell" class="adm-wrap" style="display:none">
+  <aside class="adm-side">
+    <div class="adm-side-h">
+      <div class="logo"><img src="katale-icon.png" alt="Katale" id="sideLogo"> Katale</div>
+      <p>Admin dashboard for marketplace operations.</p>
+    </div>
+    <nav class="adm-nav" id="adminNav"></nav>
+    <div class="adm-foot">
+      <button id="logoutBtn"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg> Sign out</button>
+    </div>
+  </aside>
+  <div class="adm-main">
+    <header class="adm-top"><h2 id="pageTitle">Dashboard</h2><div id="pageActions"></div></header>
+    <div class="adm-body" id="pageBody"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const SUPABASE_URL = 'https://cilxdqvqobudytwgruur.supabase.co';
+  // The project's current publishable key. It replaced a legacy `anon` JWT
+  // (`eyJ…`, role anon), which the project has since rotated: PostgREST answers
+  // that one 401, so every table read on this page failed and the dashboard showed
+  // empty counts rather than an error. Must be kept in step with the app's
+  // `app/lib/core/config/app_config.dart`.
+  const SUPABASE_ANON_KEY = 'sb_publishable_a7UGIGBsPt-sC8fiW0d4Dw_WJBqqQIm';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const IC={
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',pin:'<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2.5.6 4 2.3 4 5"/>',
+    store:'<path d="M3 9l1.5-5h15L21 9v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 14v7h14v-7"/>',
+    layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+    tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/>',
+    flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',chart:'<path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/>',
+    file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h6"/>',cash:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+    shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="m9 12 2 2 4-4"/>',bell:'<path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    back:'<path d="m15 6-6 6 6 6"/>',logout:'<path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/>',
+    check:'<path d="m5 12 5 5 9-10"/>',close:'<path d="M6 6l12 12M18 6 6 18"/>',
+    download:'<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 20h16"/>',
+    eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    ban:'<circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+    id:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.5-1.5 1.7-2 3-2s2.5.5 3 2M14 10h4M14 13h4"/>',
+    contract:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h6"/>'
+  };
+  const ic=(n,s=20)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
+
+  const PAGES=[
+    {id:'dashboard',label:'Dashboard',icon:'grid'},
+    {id:'users',label:'Users',icon:'users'},
+    {id:'businesses',label:'Businesses',icon:'store'},
+    {id:'subscriptions',label:'Subscriptions',icon:'layers'},
+    {id:'contracts',label:'Contracts',icon:'file'},
+    {id:'listings',label:'Listings',icon:'tag'},
+    {id:'reports',label:'Reports',icon:'flag'},
+    {id:'categories',label:'Categories',icon:'layers'},
+    {id:'analytics',label:'Analytics',icon:'chart'}
+  ];
+
+  let currentPage='dashboard';
+  let currentUser=null;
+  let usersCache=[],businessesCache=[],subscriptionsCache=[],paymentsCache=[],listingsCache=[],reportsCache=[],categoriesCache=[];
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function fmtDate(d){if(!d)return'—';const dt=new Date(d);return dt.toLocaleDateString('en-UG',{day:'numeric',month:'short',year:'numeric'})}
+  function fmtMoney(n){return'UGX '+(n||0).toLocaleString('en-UG')}
+  function fmtDateTime(d){if(!d)return'—';const dt=new Date(d);return dt.toLocaleString('en-UG',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+  function initials(name){const p=String(name||'?').trim().split(/\s+/).filter(Boolean);return p.length?p.slice(0,2).map(x=>x[0].toUpperCase()).join(''):'?'}
+
+  function avatar(name,tone,size=36){
+    const bg=tone==='warm'?'#F4D9C8':tone==='cool'?'#C8DCF4':tone==='green'?'#D4E8D0':'#E9EEEB';
+    return`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:grid;place-items:center;font-weight:700;font-size:${Math.round(size*0.35)}px;flex:none;color:var(--ink)">${initials(name)}</div>`;
+  }
+
+  function showToast(msg,dur=2500){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur)}
+
+  async function ensureAdmin(){
+    const{data:{user}}=await db.auth.getUser();
+    if(!user){document.getElementById('loginScreen').style.display='';document.getElementById('adminShell').style.display='none';return false}
+    const{data,error}=await db.from('profiles').select('role').eq('id',user.id).single();
+    if(error||!data||data.role!=='admin'){showToast('Not an admin');return false}
+    currentUser=user;return true;
+  }
+
+  async function loadData(){
+    const q=(t,c,f,o)=>db.from(t).select(c).neq('id','00000000-0000-0000-0000-000000000000').order(o||'created_at',{ascending:false});
+    const[up,bp,sp,pp,lp,rp,cp]=await Promise.all([
+      q('profiles','id,name,email,phone,role,status,created_at,avatar_tone'),
+      q('businesses','id,name,status,owner_id,category_id,loc,verified,created_at'),
+      q('subscriptions','id,business_id,seller_id,plan_id,amount,status,started_at,renews_at,auto_renew,admin_note,cancelled_at,plans(name,rank)'),
+      q('payments','id,business_id,plan_id,amount,provider,reference,status,created_at,paid_at'),
+      q('products','id,title,status,business_id,price,flags,created_at'),
+      q('reports','id,target_type,target_id,reason,status,reported_by,created_at,resolution'),
+      q('categories','id,name,icon,active,parent_id,"order"')
+    ]);
+    usersCache=up.data||[];businessesCache=bp.data||[];subscriptionsCache=sp.data||[];
+    paymentsCache=pp.data||[];listingsCache=[...(lp.data||[]).map(x=>({...x,kind:'product'}))];
+    reportsCache=rp.data||[];categoriesCache=cp.data||[];
+  }
+
+  function getBusiness(ownerId){return businessesCache.find(b=>b.owner_id===ownerId)}
+  function getPlanName(planId){const s=subscriptionsCache.find(x=>x.plan_id===planId);return s&&s.plans?s.plans.name:'—'}
+  function getPlanRank(planId){const s=subscriptionsCache.find(x=>x.plan_id===planId);return s&&s.plans?s.plans.rank:0}
+
+  function navHTML(){
+    const items=PAGES.map(p=>`<button data-page="${p.id}" class="${currentPage===p.id?'active':''}"><small>${ic(p.icon,16)}</small> ${p.label}</button>`).join('');
+    return items;
+  }
+
+  function pageTitle(){return PAGES.find(p=>p.id===currentPage)?.label||'Dashboard'}
+
+  /* ===================== DASHBOARD ===================== */
+  function renderDashboard(){
+    const activeUsers=usersCache.filter(u=>u.status==='active').length;
+    const suspendedUsers=usersCache.filter(u=>u.status==='suspended').length;
+    const activeBiz=businessesCache.filter(b=>b.status==='approved').length;
+    const pendingBiz=businessesCache.filter(b=>b.status==='pending').length;
+    const activeListings=listingsCache.filter(l=>l.status==='active').length;
+    const activeSubs=subscriptionsCache.filter(s=>s.status==='active').length;
+    const openReports=reportsCache.filter(r=>r.status==='open').length;
+    const revenue=paymentsCache.filter(p=>p.status==='success').reduce((a,p)=>a+(p.amount||0),0);
+    const removed=listingsCache.filter(l=>l.status==='removed').length;
+    const contacts=0;
+
+    const stats=[
+      {label:'Active users',value:activeUsers,icon:'users',sub:`${usersCache.filter(u=>u.role==='seller').length} sellers`},
+      {label:'Live businesses',value:activeBiz,icon:'store',sub:`${pendingBiz} pending approval`},
+      {label:'Active listings',value:activeListings,icon:'tag',sub:`${removed} removed`},
+      {label:'Revenue (settled)',value:'UGX '+revenue.toLocaleString('en-UG'),icon:'cash',sub:'All successful payments'},
+      {label:'Active subscriptions',value:activeSubs,icon:'layers',sub:'Paid plans only'},
+      {label:'Open reports',value:openReports,icon:'flag',sub:'Need moderation'}
+    ];
+
+    const statCards=stats.map(s=>`<div class="stat"><small>${ic(s.icon,14)} ${s.label}</small><b>${s.value}</b><em>${s.sub}</em></div>`).join('');
+
+    const queue=businessesCache.filter(b=>b.status==='pending').sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)).slice(0,5);
+    const queueRows=queue.length?queue.map(b=>{
+      const owner=usersCache.find(u=>u.id===b.owner_id);
+      return`<tr><td><b>${esc(b.name)}</b></td><td>${esc(owner?.email||'')}</td><td>${fmtDate(b.created_at)}</td><td><div style="display:flex;gap:6px"><button class="btn sm" onclick="approveBiz('${b.id}')">Approve</button><button class="btn sm ghost" onclick="rejectBiz('${b.id}')">Reject</button></div></td></tr>`;
+    }).join(''):'<tr><td colspan="4" class="empty">No pending approvals</td></tr>';
+
+    const openRep=reportsCache.filter(r=>r.status==='open').sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)).slice(0,5);
+    const repRows=openRep.length?openRep.map(r=>`<tr><td>${esc(r.reason)}</td><td>${esc(r.target_type)}</td><td>${fmtDate(r.created_at)}</td><td><span class="tag warn">Open</span></td></tr>`).join(''):'<tr><td colspan="4" class="empty">No open reports</td></tr>';
+
+    return`
+      <div class="grid3" style="margin-bottom:20px">${statCards}</div>
+      <div class="grid2">
+        <div class="card" style="overflow:auto"><div class="pad stack"><h4>Pending approvals</h4>
+          <table class="table"><thead><tr><th>Business</th><th>Owner</th><th>Submitted</th><th>Action</th></tr></thead><tbody>${queueRows}</tbody></table>
+        </div></div>
+        <div class="card" style="overflow:auto"><div class="pad stack"><h4>Open reports</h4>
+          <table class="table"><thead><tr><th>Reason</th><th>Type</th><th>Filed</th><th>Status</th></tr></thead><tbody>${repRows}</tbody></table>
+        </div></div>
+      </div>`;
+  }
+
+  /* ===================== USERS ===================== */
+  function renderUsers(){
+    const q=document.getElementById('uQ')?.value?.toLowerCase()||'';
+    const role=document.getElementById('uRole')?.value||'all';
+    const status=document.getElementById('uStatus')?.value||'all';
+    let list=usersCache;
+    if(q)list=list.filter(u=>(u.name+' '+(u.email||'')).toLowerCase().includes(q));
+    if(role!=='all')list=list.filter(u=>u.role===role);
+    if(status!=='all')list=list.filter(u=>u.status===status);
+
+    const rows=list.map(u=>{
+      const biz=getBusiness(u.id);
+      return`<tr>
+        <td><div class="row" style="gap:8px">${avatar(u.name,u.avatar_tone,32)}<div><b>${esc(u.name)}</b><div class="small muted">${esc(u.email||'')}</div></div></div></td>
+        <td><span class="tag ${u.role==='admin'?'info':u.role==='seller'?'warn':''}">${u.role}</span>${biz?`<div class="small muted">${esc(biz.name)}</div>`:''}</td>
+        <td>${fmtDate(u.created_at)}</td>
+        <td><span class="tag ${u.status==='active'?'ok':'bad'}">${u.status}</span></td>
+        <td><div style="display:flex;gap:6px">
+          ${u.role!=='admin'?(u.status==='active'?`<button class="btn sm ghost" onclick="suspendUser('${u.id}')">Suspend</button>`:`<button class="btn sm" onclick="restoreUser('${u.id}')">Restore</button>`):'<span class="small muted">Protected</span>'}
+          <button class="btn sm ghost" onclick="viewUser('${u.id}')">View</button>
+        </div></td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="5" class="empty">No users match</td></tr>';
+
+    return`
+      <form class="row" style="gap:8px;margin-bottom:16px;flex-wrap:wrap" onsubmit="event.preventDefault();renderPage('users')">
+        <input class="inp" id="uQ" placeholder="Search name or email" value="${esc(q)}" style="max-width:260px">
+        <select class="sel" id="uRole" style="max-width:140px"><option value="all">All roles</option><option value="buyer">Buyers</option><option value="seller">Sellers</option><option value="admin">Staff</option></select>
+        <select class="sel" id="uStatus" style="max-width:140px"><option value="all">Any status</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
+        <button class="btn sm" type="submit">Apply</button>
+      </form>
+      <div class="card" style="overflow:auto"><table class="table"><thead><tr><th>User</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  /* ===================== BUSINESSES ===================== */
+  function renderBusinesses(){
+    const status=document.getElementById('bStatus')?.value||'pending';
+    let list=businessesCache.filter(b=>status==='all'||b.status===status).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+
+    const rows=list.map(b=>{
+      const owner=usersCache.find(u=>u.id===b.owner_id);
+      return`<tr>
+        <td><b>${esc(b.name)}</b>${b.verified?'<div class="small" style="color:var(--g-t)">Verified</div>':''}</td>
+        <td>${esc(owner?.name||'Deleted')}<br><span class="small muted">${esc(owner?.phone||'')}</span></td>
+        <td>${b.loc?.district||'—'}</td>
+        <td>${fmtDate(b.created_at)}</td>
+        <td><span class="tag ${b.status==='approved'?'ok':b.status==='pending'?'warn':'bad'}">${b.status}</span></td>
+        <td><div style="display:flex;gap:6px">
+          <button class="btn sm ghost" onclick="viewBiz('${b.id}')">Open</button>
+          ${b.status!=='approved'?`<button class="btn sm" onclick="approveBiz('${b.id}')">Approve</button>`:''}
+          ${b.status!=='rejected'?`<button class="btn sm ghost" onclick="rejectBiz('${b.id}')">Reject</button>`:''}
+          ${b.status==='approved'?`<button class="btn sm ghost" style="color:var(--bad)" onclick="suspendBiz('${b.id}')">Suspend</button>`:''}
+        </div></td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="6" class="empty">Nothing in this queue</td></tr>';
+
+    return`
+      <div class="chips" style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto">
+        ${['pending','approved','rejected','suspended','all'].map(f=>`<button class="chip ${status===f?'active':''}" onclick="setFilter('bStatus','${f}')">${f[0].toUpperCase()+f.slice(1)} (${businessesCache.filter(b=>f==='all'||b.status===f).length})</button>`).join('')}
+      </div>
+      <div class="card" style="overflow:auto"><table class="table"><thead><tr><th>Business</th><th>Owner</th><th>District</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  /* ===================== SUBSCRIPTIONS ===================== */
+  function renderSubscriptions(){
+    const filter=document.getElementById('sFilter')?.value||'all';
+    let list=subscriptionsCache.filter(s=>{
+      if(filter==='expiring')return s.status==='active'&&new Date(s.renews_at).getTime()-Date.now()<7*86400000;
+      if(filter==='suspended')return s.status==='suspended';
+      return true;
+    }).sort((a,b)=>new Date(b.started_at)-new Date(a.started_at));
+
+    const rows=list.map(s=>{
+      const biz=businessesCache.find(b=>b.id===s.business_id);
+      const owner=usersCache.find(u=>u.id===s.seller_id);
+      const daysLeft=s.renews_at?Math.max(0,Math.floor((new Date(s.renews_at)-Date.now())/(86400000))):0;
+      const planName=s.plans?.name||getPlanName(s.plan_id)||s.plan_id;
+      return`<tr>
+        <td><b>${esc(biz?.name||'—')}</b><br><span class="small muted">${esc(owner?.email||'')}</span></td>
+        <td><span class="tag ${s.plan_id==='enterprise'?'info':s.plan_id==='premium'?'warn':'ok'}">${esc(planName)}</span></td>
+        <td>${fmtMoney(s.amount)}</td>
+        <td><span class="tag ${s.status==='active'?'ok':'bad'}">${s.status}</span></td>
+        <td>${fmtDate(s.renews_at)}${s.status==='active'&&daysLeft<=7?`<br><span class="small" style="color:var(--bad)">${daysLeft}d left</span>`:''}</td>
+        <td><div style="display:flex;gap:6px">
+          <button class="btn sm ghost" onclick="viewContract('${s.id}')">${ic('contract',14)} Contract</button>
+          <button class="btn sm ghost" onclick="changePlan('${s.id}')">Change plan</button>
+          ${s.status==='active'?`<button class="btn sm ghost" style="color:var(--bad)" onclick="suspendSub('${s.id}')">Suspend</button>`:`<button class="btn sm" onclick="restoreSub('${s.id}')">Restore</button>`}
+        </div></td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="6" class="empty">No subscriptions</td></tr>';
+
+    return`
+      <div class="chips" style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto">
+        ${['all','basic','premium','enterprise','expiring','suspended'].map(f=>`<button class="chip ${filter===f?'active':''}" onclick="setFilter('sFilter','${f}')">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}
+      </div>
+      <div class="card" style="overflow:auto"><table class="table"><thead><tr><th>Seller / Business</th><th>Plan</th><th>Amount</th><th>Status</th><th>Renews</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  /* ===================== CONTRACTS ===================== */
+  function renderContracts(){
+    const activeSubs=subscriptionsCache.filter(s=>s.status==='active');
+    if(!activeSubs.length) return '<div class="es"><div class="eb">'+ic('file',28)+'</div><h4>No active subscriptions</h4><p>Contracts are generated for active paid subscriptions.</p></div>';
+
+    return`<div class="card pad stack">
+      <h4 style="margin:0">Digital Contracts</h4>
+      <p class="small muted" style="margin:0">Click "Generate" to create a contract document for the seller's subscription. Contracts include plan terms, amounts, and digital signature fields.</p>
+      <div style="overflow:auto">
+      <table class="table">
+        <thead><tr><th>Business</th><th>Seller</th><th>Plan</th><th>Amount</th><th>Started</th><th>Renews</th><th>Actions</th></tr></thead>
+        <tbody>
+        ${activeSubs.map(s=>{
+          const biz=businessesCache.find(b=>b.id===s.business_id);
+          const owner=usersCache.find(u=>u.id===s.seller_id);
+          const planName=s.plans?.name||getPlanName(s.plan_id)||s.plan_id;
+          return`<tr>
+            <td><b>${esc(biz?.name||'—')}</b></td>
+            <td>${esc(owner?.name||'—')}<br><span class="small muted">${esc(owner?.email||'')}</span></td>
+            <td><span class="tag ${s.plan_id==='enterprise'?'info':s.plan_id==='premium'?'warn':'ok'}">${esc(planName)}</span></td>
+            <td>${fmtMoney(s.amount)}</td>
+            <td>${fmtDate(s.started_at)}</td>
+            <td>${fmtDate(s.renews_at)}</td>
+            <td><button class="btn sm sec" onclick="generateContract('${s.id}')">${ic('download',14)} Generate</button></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>`;
+  }
+
+  function generateContract(subId){
+    const s=subscriptionsCache.find(x=>x.id===subId);
+    if(!s){showToast('Subscription not found');return}
+    const biz=businessesCache.find(b=>b.id===s.business_id);
+    const owner=usersCache.find(u=>u.id===s.seller_id);
+    const planName=s.plans?.name||getPlanName(s.plan_id)||s.plan_id;
+    const contractId='KAT-CON-'+Date.now().toString(36).toUpperCase();
+    const today=new Date().toLocaleDateString('en-UG',{day:'numeric',month:'long',year:'numeric'});
+
+    const terms=s.plan_id==='enterprise'?'Unlimited listings, priority support, dedicated account manager, custom integrations.':s.plan_id==='premium'?'Up to 50 active listings, priority placement, advanced analytics, priority support.':'Basic listing capabilities, standard support.';
+
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Katale Contract</title>
+    <style>
+      body{font-family:'Figtree',system-ui,sans-serif;max-width:800px;margin:40px auto;padding:40px;color:#14201B;line-height:1.6;position:relative}
+      body::before{content:"";position:absolute;top:0;right:0;width:300px;height:300px;background:url('katale-icon.png') no-repeat center center;background-size:contain;opacity:0.05;pointer-events:none}
+      h1{text-align:center;font-size:26px;margin-bottom:8px}h2{font-size:18px;margin-top:28px;margin-bottom:10px;border-bottom:2px solid #E3E8E5;padding-bottom:6px}
+      .meta{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+      .meta div{padding:12px;background:#F8F9FA;border-radius:10px;border:1px solid #E3E8E5}
+      .meta b{display:block;font-size:12px;color:#5B6B64;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+      .terms{background:#E3F3EC;border-left:4px solid #0F8A5F;padding:16px 20px;border-radius:0 12px 12px 0;margin:16px 0}
+      .sig{margin-top:40px;padding-top:20px;border-top:2px solid #E3E8E5;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+      .sig div{border-bottom:1px solid #14201B;padding-bottom:8px;min-height:60px}
+      .footer{margin-top:40px;text-align:center;font-size:12px;color:#5B6B64}
+      @media print{body{margin:0;padding:20px}}
+    </style></head><body>
+    <h1>Katale Online Market</h1>
+    <h2 style="text-align:center;border:0;margin-top:0">Seller Subscription Agreement</h2>
+    <div class="meta">
+      <div><b>Contract ID</b>${contractId}</div>
+      <div><b>Date</b>${today}</div>
+      <div><b>Business</b>${esc(biz?.name||'—')}</div>
+      <div><b>Seller</b>${esc(owner?.name||'—')}</div>
+      <div><b>Email</b>${esc(owner?.email||'—')}</div>
+      <div><b>Phone</b>${esc(owner?.phone||'—')}</div>
+      <div><b>Plan</b>${esc(planName)}</div>
+      <div><b>Monthly Fee</b>UGX ${(s.amount||0).toLocaleString('en-UG')}</div>
+      <div><b>Start Date</b>${fmtDate(s.started_at)}</div>
+      <div><b>Renewal Date</b>${fmtDate(s.renews_at)}</div>
+    </div>
+    <h2>Terms & Conditions</h2>
+    <div class="terms">${terms}</div>
+    <h2>Agreement</h2>
+    <p>By signing below, the seller agrees to the subscription terms, payment schedule, and marketplace rules as outlined by Katale Online Market.</p>
+    <div class="sig">
+      <div><b>Seller Signature</b><br><br>Date: _______________</div>
+      <div><b>Katale Authorised Signatory</b><br><br>Date: _______________</div>
+    </div>
+    <div class="footer">Generated by Katale Admin Dashboard &middot; ${today}</div>
+    </body></html>`;
+
+    const blob=new Blob([html],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`katale-contract-${subId.slice(0,8)}.html`;a.click();
+    URL.revokeObjectURL(url);
+    showToast('Contract generated');
+  }
+
+  /* ===================== LISTINGS ===================== */
+  function renderListings(){
+    const kind=document.getElementById('lKind')?.value||'all';
+    const status=document.getElementById('lStatus')?.value||'all';
+    const q=document.getElementById('lQ')?.value?.toLowerCase()||'';
+    let rows=[...listingsCache];
+    if(kind!=='all')rows=rows.filter(l=>l.kind===kind);
+    if(status!=='all')rows=rows.filter(l=>l.status===status);
+    if(q)rows=rows.filter(l=>(l.title+' '+(l.kind==='product'?'Product':'Service')).toLowerCase().includes(q));
+    rows.sort((a,b)=>(b.flags||0)-(a.flags||0));
+
+    const trs=rows.slice(0,60).map(p=>{
+      const biz=businessesCache.find(b=>b.id===p.business_id);
+      return`<tr>
+        <td><b>${esc(p.title)}</b><br><span class="small muted">${esc(p.kind)} &middot; ${esc(biz?.name||'')}</span>${(p.flags||0)?`<br><span class="tag bad">${p.flags} reports</span>`:''}</td>
+        <td>${fmtMoney(p.kind==='service'?p.price_from:p.price)}</td>
+        <td>${fmtDate(p.created_at)}</td>
+        <td><span class="tag ${p.status==='active'?'ok':p.status==='removed'?'bad':'warn'}">${p.status}</span></td>
+        <td><div style="display:flex;gap:6px">
+          ${p.status==='active'?`<button class="btn sm ghost" style="color:var(--bad)" onclick="removeListing('${p.kind}','${p.id}')">Remove</button>`:`<button class="btn sm" onclick="restoreListing('${p.kind}','${p.id}')">Restore</button>`}
+        </div></td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="5" class="empty">No listings match</td></tr>';
+
+    return`
+      <form class="row" style="gap:8px;margin-bottom:16px;flex-wrap:wrap" onsubmit="event.preventDefault();renderPage('listings')">
+        <input class="inp" id="lQ" placeholder="Search title or seller" value="${esc(q)}" style="max-width:240px">
+        <select class="sel" id="lKind" style="max-width:140px"><option value="all">All types</option><option value="product">Products</option><option value="service">Services</option></select>
+        <select class="sel" id="lStatus" style="max-width:140px"><option value="all">Any status</option><option value="active">Live</option><option value="hidden">Hidden</option><option value="removed">Removed</option></select>
+        <button class="btn sm" type="submit">Apply</button>
+      </form>
+      <div class="card" style="overflow:auto"><table class="table"><thead><tr><th>Listing</th><th>Price</th><th>Posted</th><th>Status</th><th>Actions</th></tr></thead><tbody>${trs}</tbody></table></div>`;
+  }
+
+  /* ===================== REPORTS ===================== */
+  function renderReports(){
+    const filter=document.getElementById('rFilter')?.value||'open';
+    let list=reportsCache.filter(r=>filter==='all'||r.status===filter).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+
+    const rows=list.map(r=>`<tr>
+      <td><b>${esc(r.reason||'—')}</b><br><span class="small muted">${r.target_type} &middot; ${esc(r.target_id||'')}</span></td>
+      <td>${esc(r.target_type)}</td>
+      <td>${fmtDate(r.created_at)}</td>
+      <td><span class="tag ${r.status==='open'?'warn':'ok'}">${r.status}</span>${r.resolution?`<br><span class="small muted">${esc(r.resolution)}</span>`:''}</td>
+      <td>${r.status==='open'?`<div style="display:flex;gap:6px"><button class="btn sm" onclick="resolveReport('${r.id}',1)">Remove item</button><button class="btn sm ghost" onclick="resolveReport('${r.id}',0)">Keep</button></div>`:'<span class="small muted">Closed</span>'}</td>
+    </tr>`).join('')||'<tr><td colspan="5" class="empty">No reports</td></tr>';
+
+    return`
+      <div class="chips" style="display:flex;gap:8px;margin-bottom:16px">
+        ${['open','resolved','all'].map(f=>`<button class="chip ${filter===f?'active':''}" onclick="setFilter('rFilter','${f}')">${f[0].toUpperCase()+f.slice(1)} (${reportsCache.filter(r=>f==='all'||r.status===f).length})</button>`).join('')}
+      </div>
+      <div class="card" style="overflow:auto"><table class="table"><thead><tr><th>Reason</th><th>Type</th><th>Filed</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  /* ===================== CATEGORIES ===================== */
+  function renderCategories(){
+    const parents=categoriesCache.filter(c=>!c.parent_id).sort((a,b)=>a.order-b.order);
+    const rows=parents.map(p=>{
+      const kids=categoriesCache.filter(c=>c.parent_id===p.id).sort((a,b)=>a.order-b.order);
+      return`<tr>
+        <td><b>${esc(p.name)}</b></td>
+        <td>${p.icon}</td>
+        <td><span class="tag ${p.active?'ok':'warn'}">${p.active?'Active':'Hidden'}</span></td>
+        <td>${kids.length} sub</td>
+        <td><div style="display:flex;gap:6px">
+          <button class="btn sm ghost" onclick="toggleCat('${p.id}')">${p.active?'Hide':'Show'}</button>
+          <button class="btn sm ghost" style="color:var(--bad)" onclick="deleteCat('${p.id}')">Delete</button>
+        </div></td>
+      </tr>
+      ${kids.map(k=>`<tr style="background:var(--bg)"><td style="padding-left:32px">${esc(k.name)}</td><td>${k.icon}</td><td><span class="tag ${k.active?'ok':'warn'}">${k.active?'Active':'Hidden'}</span></td><td></td><td><div style="display:flex;gap:6px"><button class="btn sm ghost" onclick="toggleCat('${k.id}')">${k.active?'Hide':'Show'}</button><button class="btn sm ghost" style="color:var(--bad)" onclick="deleteCat('${k.id}')">Delete</button></div></td></tr>`).join('')}`;
+    }).join('');
+
+    return`
+      <div class="card" style="overflow:auto"><table class="table"><thead><tr><th>Category</th><th>Icon</th><th>Status</th><th>Sub</th><th>Actions</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="empty">No categories</td></tr>'}</tbody></table></div>
+      <div class="card pad stack" style="margin-top:16px">
+        <h4>Add category</h4>
+        <form class="row" style="gap:8px" onsubmit="event.preventDefault();addCategory()">
+          <input class="inp" id="catName" placeholder="Category name" style="max-width:220px">
+          <select class="sel" id="catIcon" style="max-width:120px">${['food','elec','agri','truck','bed','shirt','hammer','cross','book','brief','bldg','wrench','store','tag','bag','image','target'].map(i=>`<option value="${i}">${i}</option>`).join('')}</select>
+          <input class="inp" id="catOrder" type="number" value="${parents.length+1}" style="max-width:80px" aria-label="Order">
+          <button class="btn sm" type="submit">Add</button>
+        </form>
+      </div>`;
+  }
+
+  /* ===================== ANALYTICS ===================== */
+  function renderAnalytics(){
+    const revenue=paymentsCache.filter(p=>p.status==='success').reduce((a,p)=>a+(p.amount||0),0);
+    const byPlan={};
+    subscriptionsCache.forEach(s=>{const n=s.plans?.name||getPlanName(s.plan_id)||s.plan_id;byPlan[n]=(byPlan[n]||0)+1});
+    const planBars=Object.entries(byPlan).map(([label,count])=>`<div style="margin-bottom:10px"><div class="row between small" style="margin-bottom:4px"><span>${esc(label)}</span><b>${count}</b></div><div class="bar"><i style="width:${Math.round(count/Math.max(subscriptionsCache.length,1)*100)}%"></i></div></div>`).join('');
+
+    const byMonth={};
+    paymentsCache.filter(p=>p.status==='success').forEach(p=>{const d=new Date(p.created_at);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');byMonth[k]=(byMonth[k]||0)+p.amount});
+    const monthBars=Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6).map(([label,value])=>`<div style="margin-bottom:10px"><div class="row between small" style="margin-bottom:4px"><span>${esc(label)}</span><b>UGX ${value.toLocaleString('en-UG')}</b></div><div class="bar"><i style="width:${Math.round(value/Math.max(...Object.values(byMonth),1)*100)}%"></i></div></div>`).join('');
+
+    return`
+      <div class="grid2">
+        <div class="card pad stack"><h4>Monthly revenue</h4>${monthBars||'<p class="small muted">No payments yet</p>'}</div>
+        <div class="card pad stack"><h4>Subscriptions by plan</h4>${planBars||'<p class="small muted">No subscriptions</p>'}</div>
+      </div>
+      <div class="grid2" style="margin-top:16px">
+        <div class="card pad stack"><h4>Top businesses by listings</h4>${[...businessesCache].sort((a,b)=>{
+          const al=listingsCache.filter(l=>l.business_id===a.id&&l.status==='active').length;
+          const bl=listingsCache.filter(l=>l.business_id===b.id&&l.status==='active').length;
+          return bl-al;
+        }).slice(0,8).map(b=>`<div class="row between small"><span>${esc(b.name)}</span><b>${listingsCache.filter(l=>l.business_id===b.id&&l.status==='active').length}</b></div>`).join('')||'No data'}</div>
+        <div class="card pad stack"><h4>User roles</h4>${['buyer','seller','admin'].map(r=>`<div class="row between small"><span>${r}</span><b>${usersCache.filter(u=>u.role===r).length}</b></div>`).join('')}</div>
+      </div>`;
+  }
+
+  /* ===================== USER DETAIL ===================== */
+  function renderUserDetail(userId){
+    const u=usersCache.find(x=>x.id===userId);
+    if(!u)return'<div class="es"><h4>User not found</h4></div>';
+    const biz=getBusiness(u.id);
+    const sub=subscriptionsCache.find(s=>s.seller_id===u.id&&s.status==='active');
+    const products=listingsCache.filter(l=>l.business_id===biz?.id&&l.kind==='product');
+    const services=listingsCache.filter(l=>l.business_id===biz?.id&&l.kind==='service');
+    const reviews=[];
+
+    return`
+      <div class="grid2">
+        <div class="card pad stack">
+          <div class="row" style="gap:14px">${avatar(u.name,u.avatar_tone,56)}<div class="grow">
+            <h3>${esc(u.name)}</h3>
+            <p class="small muted" style="margin:0">${esc(u.email||'')} &middot; ${esc(u.phone||'')}</p>
+            <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">
+              <span class="tag ${u.role==='admin'?'info':u.role==='seller'?'warn':''}">${u.role}</span>
+              <span class="tag ${u.status==='active'?'ok':'bad'}">${u.status}</span>
+              <span class="tag ${u.phone?'ok':'bad'}">${u.phone?'Phone verified':'Phone unverified'}</span>
+              <span class="tag ${u.email?'ok':'bad'}">${u.email?'Email':'No email'}</span>
+            </div>
+          </div></div>
+          <div class="kv" style="grid-template-columns:140px 1fr">
+            <dt>Location</dt><dd>${esc(u.avatar_tone||'—')}</dd>
+            <dt>Joined</dt><dd>${fmtDate(u.created_at)}</dd>
+            <dt>Plan</dt><dd>${sub?`${sub.plans?.name||getPlanName(sub.plan_id)}, renews ${fmtDate(sub.renews_at)}`:'No active plan'}</dd>
+            <dt>Listings</dt><dd>${products.length} products, ${services.length} services</dd>
+          </div>
+          <div class="row" style="gap:8px;margin-top:8px">
+            ${u.role!=='admin'?(u.status==='active'?`<button class="btn ghost" onclick="suspendUser('${u.id}')">Suspend</button>`:`<button class="btn" onclick="restoreUser('${u.id}')">Restore</button>`):''}
+          </div>
+        </div>
+        <div class="card pad stack">
+          <h4>Businesses</h4>
+          ${biz?`<div class="kv"><dt>Name</dt><dd>${esc(biz.name)}</dd><dt>Status</dt><dd>${biz.status}</dd><dt>Category</dt><dd>${biz.category_id||'—'}</dd><dt>Verified</dt><dd>${biz.verified?'Yes':'No'}</dd></div>`:'<p class="small muted">No business</p>'}
+          <h4>Listings</h4>
+          ${[...products,...services].length?[...products,...services].map(p=>`<div class="row between"><span>${esc(p.title)}</span><span class="tag ${p.status==='active'?'ok':'bad'}">${p.status}</span></div>`).join(''):'<p class="small muted">No listings</p>'}
+        </div>
+      </div>`;
+  }
+
+  /* ===================== BIZ DETAIL ===================== */
+  function renderBizDetail(bizId){
+    const b=businessesCache.find(x=>x.id===bizId);
+    if(!b)return'<div class="es"><h4>Business not found</h4></div>';
+    const owner=usersCache.find(u=>u.id===b.owner_id);
+    const sub=subscriptionsCache.find(s=>s.business_id===b.id&&s.status==='active');
+    const listingRows=listingsCache.filter(l=>l.business_id===b.id).map(p=>`<tr><td>${esc(p.title)}</td><td>${p.kind}</td><td>${fmtMoney(p.kind==='service'?p.price_from:p.price)}</td><td><span class="tag ${p.status==='active'?'ok':'bad'}">${p.status}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">No listings</td></tr>';
+
+    return`
+      <div class="card pad stack">
+        <div class="row" style="gap:14px"><div><h3>${esc(b.name)}</h3><p class="small muted" style="margin:4px 0 0">Owner: ${esc(owner?.name||'—')} &middot; ${esc(owner?.email||'')}</p></div>
+        <div style="margin-left:auto"><span class="tag ${b.status==='approved'?'ok':b.status==='pending'?'warn':'bad'}">${b.status}</span></div></div>
+        <div class="kv" style="grid-template-columns:140px 1fr">
+          <dt>Category</dt><dd>${esc(b.category_id||'—')}</dd>
+          <dt>District</dt><dd>${esc(b.loc?.district||'—')}</dd>
+          <dt>Region</dt><dd>${esc(b.loc?.region||'—')}</dd>
+          <dt>Verified</dt><dd>${b.verified?'Yes':'No'}</dd>
+          <dt>Plan</dt><dd>${sub?sub.plans?.name||getPlanName(sub.plan_id):'None'}</dd>
+        </div>
+        <div class="row" style="gap:8px;margin-top:8px">
+          ${b.status!=='approved'?`<button class="btn" onclick="approveBiz('${b.id}')">Approve</button>`:''}
+          ${b.status!=='rejected'?`<button class="btn ghost" onclick="rejectBiz('${b.id}')">Reject</button>`:''}
+          ${b.status==='approved'?`<button class="btn ghost" style="color:var(--bad)" onclick="suspendBiz('${b.id}')">Suspend</button>`:''}
+          ${sub?`<button class="btn sec" onclick="viewContract('${sub.id}')">View Contract</button>`:''}
+        </div>
+      </div>
+      <div class="card pad stack" style="margin-top:16px"><h4>Listings</h4>
+        <table class="table"><thead><tr><th>Title</th><th>Type</th><th>Price</th><th>Status</th></tr></thead><tbody>${listingRows}</tbody></table>
+      </div>`;
+  }
+
+  /* ===================== ACTIONS ===================== */
+  window.suspendUser=async function(id){
+    const reason=prompt('Reason for suspension (min 5 chars):');
+    if(!reason||reason.trim().length<5)return showToast('Reason required');
+    const{error}=await db.from('profiles').update({status:'suspended',suspended_reason:reason.trim()}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('User suspended');await loadData();renderPage(currentPage);
+  };
+  window.restoreUser=async function(id){
+    const{error}=await db.from('profiles').update({status:'active',suspended_reason:null}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('User restored');await loadData();renderPage(currentPage);
+  };
+  window.viewUser=function(id){currentPage='user-detail';renderPage('user-detail',id)};
+  window.viewBiz=function(id){currentPage='biz-detail';renderPage('biz-detail',id)};
+
+  window.approveBiz=async function(id){
+    const{error}=await db.from('businesses').update({status:'approved',verified:true}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Business approved');await loadData();renderPage(currentPage);
+  };
+  window.rejectBiz=async function(id){
+    const reason=prompt('Reason for rejection:')||'Not suitable';
+    const{error}=await db.from('businesses').update({status:'rejected'}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Business rejected');await loadData();renderPage(currentPage);
+  };
+  window.suspendBiz=async function(id){
+    const{error}=await db.from('businesses').update({status:'suspended'}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Business suspended');await loadData();renderPage(currentPage);
+  };
+
+  window.suspendSub=async function(id){
+    const{error}=await db.from('subscriptions').update({status:'suspended'}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Subscription suspended');await loadData();renderPage(currentPage);
+  };
+  window.restoreSub=async function(id){
+    const{error}=await db.from('subscriptions').update({status:'active'}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Subscription restored');await loadData();renderPage(currentPage);
+  };
+  window.changePlan=async function(id){
+    const plan=prompt('New plan code (free, basic, premium, enterprise):');
+    if(!plan||!['free','basic','premium','enterprise'].includes(plan.toLowerCase()))return showToast('Invalid plan');
+    const{error}=await db.from('subscriptions').update({plan_id:plan.toLowerCase()}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Plan changed');await loadData();renderPage(currentPage);
+  };
+
+  window.removeListing=async function(kind,id){
+    const{error}=await db.from(kind==='service'?'services':'products').update({status:'removed'}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Listing removed');await loadData();renderPage(currentPage);
+  };
+  window.restoreListing=async function(kind,id){
+    const{error}=await db.from(kind==='service'?'services':'products').update({status:'active'}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Listing restored');await loadData();renderPage(currentPage);
+  };
+  window.resolveReport=async function(id,remove){
+    const{error}=await db.from('reports').update({status:'resolved',resolution:remove?'Item removed':'Item kept',resolved_at:new Date().toISOString()}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Report resolved');await loadData();renderPage(currentPage);
+  };
+  window.toggleCat=async function(id){
+    const cat=categoriesCache.find(c=>c.id===id);if(!cat)return;
+    const{error}=await db.from('categories').update({active:!cat.active}).eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Category updated');await loadData();renderPage(currentPage);
+  };
+  window.deleteCat=async function(id){
+    if(!confirm('Delete this category?'))return;
+    const{error}=await db.from('categories').delete().eq('id',id);
+    if(error)return showToast('Error: '+error.message);
+    showToast('Category deleted');await loadData();renderPage(currentPage);
+  };
+  window.addCategory=async function(){
+    const name=document.getElementById('catName').value.trim();if(!name)return showToast('Name required');
+    const icon=document.getElementById('catIcon').value;const order=parseInt(document.getElementById('catOrder').value)||0;
+    const{error}=await db.from('categories').insert({name,icon,order,active:true,parent_id:null});
+    if(error)return showToast('Error: '+error.message);
+    showToast('Category added');await loadData();renderPage(currentPage);
+  };
+  window.setFilter=function(fieldId,value){
+    const el=document.getElementById(fieldId);if(el){el.value=value;renderPage(currentPage)}
+  };
+  window.viewContract=window.generateContract;
+
+  /* ===================== ROUTING ===================== */
+  window.renderPage=async function(page,param){
+    currentPage=page;
+    document.getElementById('pageTitle').textContent=page==='user-detail'?'User detail':page==='biz-detail'?'Business detail':pageTitle();
+    document.getElementById('pageActions').innerHTML='';
+    document.getElementById('adminNav').innerHTML=navHTML();
+
+    let html='';
+    switch(page){
+      case'dashboard':html=renderDashboard();break;
+      case'users':html=renderUsers();break;
+      case'businesses':html=renderBusinesses();break;
+      case'subscriptions':html=renderSubscriptions();break;
+      case'contracts':html=renderContracts();break;
+      case'listings':html=renderListings();break;
+      case'reports':html=renderReports();break;
+      case'categories':html=renderCategories();break;
+      case'analytics':html=renderAnalytics();break;
+      case'user-detail':html=param?renderUserDetail(param):'';break;
+      case'biz-detail':html=param?renderBizDetail(param):'';break;
+      default:html=renderDashboard();
+    }
+    document.getElementById('pageBody').innerHTML=html;
+  };
+
+  /* ===================== AUTH ===================== */
+  document.getElementById('loginBtn').addEventListener('click',async()=>{
+    const email=document.getElementById('loginEmail').value.trim();
+    const pass=document.getElementById('loginPass').value;
+    const errEl=document.getElementById('loginErr');
+    if(!email||!pass){errEl.style.display='block';errEl.textContent='Enter email and password';return}
+
+    const{data,error}=await db.auth.signInWithPassword({email,password:pass});
+    if(error){errEl.style.display='block';errEl.textContent='Invalid credentials';return}
+
+    const ok=await ensureAdmin();
+    if(!ok){errEl.style.display='block';errEl.textContent='Not authorised as admin';await db.auth.signOut();return}
+
+    errEl.style.display='none';
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminShell').style.display='';
+    await loadData();renderPage('dashboard');
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click',async()=>{
+    await db.auth.signOut();currentUser=null;
+    document.getElementById('adminShell').style.display='none';
+    document.getElementById('loginScreen').style.display='';
+    document.getElementById('loginEmail').value='';document.getElementById('loginPass').value='';
+  });
+
+  /* ===================== INIT ===================== */
+  (async()=>{
+    const{data:{user}}=await db.auth.getUser();
+    if(user){
+      const ok=await ensureAdmin();
+      if(ok){
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('adminShell').style.display='';
+        await loadData();renderPage('dashboard');
+      }
+    }
+  })();
+
+})();
+</script>
+</body>
+</html>
